@@ -35,7 +35,7 @@ def main():
                     if args in available_commands:
                         print(f"{args} is a shell builtin")
                     elif found_path := find_in_path(path, args):
-                        print(f"{args} in {found_path}")
+                        print(f"{args} is {found_path}")
                     else:
                         print(f"{args}: not found")
                 case "echo":
