@@ -43,9 +43,9 @@ def main():
                     print(args)
                 case "exit":
                     break
-        elif found_path := find_in_path(path, command):
+        elif find_in_path(path, command):
             arr_args = args.split()
-            subprocess.run([found_path, *arr_args])
+            subprocess.run([command, *arr_args])
         else:
             print(f"{command}: command not found")
 
