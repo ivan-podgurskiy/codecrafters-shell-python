@@ -1,5 +1,6 @@
 import sys
 import os
+import subprocess
 
 available_commands = ["type", "echo", "exit"]
 
@@ -42,6 +43,8 @@ def main():
                     print(args)
                 case "exit":
                     break
+        elif found_path := find_in_path(path, command):
+            subprocess.run([command, args])
         else:
             print(f"{command}: command not found")
 
