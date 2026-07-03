@@ -2,7 +2,7 @@ import sys
 import os
 import subprocess
 
-available_commands = ["pwd", "type", "echo", "exit"]
+available_commands = ["pwd", "cd", "type", "echo", "exit"]
 
 
 def find_in_path(path, command):
@@ -41,6 +41,14 @@ def main():
                         print(f"{args}: not found")
                 case "pwd":
                     print(os.getcwd())
+                case "cd":
+                    # Check if args is directory and it exist
+                    # We probably need a proper sanitation here. 
+                    if os.path.isdir(args):
+                        os.chdir(args)
+                    else:
+                        print(f"cd: {args}: No such file or directory")
+                    print(args)
                 case "echo":
                     print(args)
                 case "exit":
