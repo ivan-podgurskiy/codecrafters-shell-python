@@ -43,11 +43,19 @@ def main():
                     print(os.getcwd())
                 case "cd":
                     # Check if args is directory and it exist
-                    # We probably need a proper sanitation here. 
-                    if os.path.isdir(args):
-                        os.chdir(args)
+                    # We probably need a proper sanitation here.
+
+                    # Let's consider ~ too
+                    dir = (
+                        args.replace("~", os.getenv("HOME"))
+                        if args.startswith("~")
+                        else args
+                    )
+
+                    if os.path.isdir(dir):
+                        os.chdir(dir)
                     else:
-                        print(f"cd: {args}: No such file or directory")
+                        print(f"cd: {dir}: No such file or directory")
                 case "echo":
                     print(args)
                 case "exit":
