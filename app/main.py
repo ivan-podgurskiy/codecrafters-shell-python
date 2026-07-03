@@ -48,7 +48,6 @@ def main():
                         os.chdir(args)
                     else:
                         print(f"cd: {args}: No such file or directory")
-                    print(args)
                 case "echo":
                     print(args)
                 case "exit":
