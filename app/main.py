@@ -2,7 +2,7 @@ import sys
 import os
 import subprocess
 
-available_commands = ["type", "echo", "exit"]
+available_commands = ["pwd", "type", "echo", "exit"]
 
 
 def find_in_path(path, command):
@@ -39,6 +39,8 @@ def main():
                         print(f"{args} is {found_path}")
                     else:
                         print(f"{args}: not found")
+                case "pwd":
+                    print(os.getcwd())
                 case "echo":
                     print(args)
                 case "exit":
