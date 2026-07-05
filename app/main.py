@@ -1,6 +1,7 @@
 import sys
 import os
 import subprocess
+import shlex
 
 available_commands = ["pwd", "cd", "type", "echo", "exit"]
 
@@ -18,6 +19,13 @@ def find_in_path(path, command):
 
     return None
 
+def parse_input(line):
+    parts = shlex.split(line)
+
+    if not parts:
+        return "", []
+
+    return parts[0], parts[1:]
 
 def main():
     path = os.environ["PATH"]
@@ -28,17 +36,18 @@ def main():
         whole_input = input()
 
         # split first word and rest from the input
-        command, args = (whole_input.split(" ", maxsplit=1) + [""])[:2]
+        command, args = parse_input(whole_input)
 
         if command in available_commands:
+            name =  args[0] if args else ""
             match command:
                 case "type":
-                    if args in available_commands:
-                        print(f"{args} is a shell builtin")
-                    elif found_path := find_in_path(path, args):
-                        print(f"{args} is {found_path}")
+                    if name in available_commands:
+                        print(f"{name} is a shell builtin")
+                    elif found_path := find_in_path(path, name):
+                        print(f"{name} is {found_path}")
                     else:
-                        print(f"{args}: not found")
+                        print(f"{name}: not found")
                 case "pwd":
                     print(os.getcwd())
                 case "cd":
@@ -61,8 +70,7 @@ def main():
                 case "exit":
                     break
         elif find_in_path(path, command):
-            arr_args = args.split()
-            subprocess.run([command, *arr_args])
+            subprocess.run([command, *args])
         else:
             print(f"{command}: command not found")
 
