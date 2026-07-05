@@ -56,9 +56,9 @@ def main():
 
                     # Let's consider ~ too
                     dir = (
-                        args.replace("~", os.getenv("HOME"))
-                        if args.startswith("~")
-                        else args
+                        args[0].replace("~", os.getenv("HOME"))
+                        if args[0].startswith("~")
+                        else args[0]
                     )
 
                     if os.path.isdir(dir):
@@ -66,7 +66,7 @@ def main():
                     else:
                         print(f"cd: {dir}: No such file or directory")
                 case "echo":
-                    print(args)
+                    print(*args)
                 case "exit":
                     break
         elif find_in_path(path, command):
