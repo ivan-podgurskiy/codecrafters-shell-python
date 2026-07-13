@@ -1,0 +1,1 @@
+BUILTIN_COMMANDS = ["pwd", "cd", "type", "echo", "exit"]

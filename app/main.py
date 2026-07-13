@@ -1,34 +1,17 @@
 import sys
 import os
 import subprocess
-import shlex
 
-available_commands = ["pwd", "cd", "type", "echo", "exit"]
+from .utils import find_in_path
+from .builtins import cmd_echo, cmd_pwd, cmd_type, cmd_cd
+from .constants import BUILTIN_COMMANDS
+from .parser import parse_input
 
-
-def find_in_path(path, command):
-    paths = path.split(":")
-    for path in paths:
-        possible_command_path = f"{path}/{command}"
-
-        exists = os.access(possible_command_path, os.F_OK)
-        is_executable = os.access(possible_command_path, os.X_OK)
-
-        if exists and is_executable:
-            return possible_command_path
-
-    return None
-
-def parse_input(line):
-    parts = shlex.split(line)
-
-    if not parts:
-        return "", []
-
-    return parts[0], parts[1:]
 
 def main():
     path = os.environ["PATH"]
+    home = os.getenv("HOME")
+
     while True:
         sys.stdout.write("$ ")
 
@@ -36,41 +19,30 @@ def main():
         whole_input = input()
 
         # split first word and rest from the input
-        command, args = parse_input(whole_input)
+        command, args, stdout_file = parse_input(whole_input, home)
 
-        if command in available_commands:
-            name =  args[0] if args else ""
+        if command in BUILTIN_COMMANDS:
             match command:
                 case "type":
-                    if name in available_commands:
-                        print(f"{name} is a shell builtin")
-                    elif found_path := find_in_path(path, name):
-                        print(f"{name} is {found_path}")
-                    else:
-                        print(f"{name}: not found")
+                    cmd_type(args, path)
                 case "pwd":
-                    print(os.getcwd())
+                    cmd_pwd(args)
                 case "cd":
-                    # Check if args is directory and it exist
-                    # We probably need a proper sanitation here.
-
-                    # Let's consider ~ too
-                    dir = (
-                        args[0].replace("~", os.getenv("HOME"))
-                        if args[0].startswith("~")
-                        else args[0]
-                    )
-
-                    if os.path.isdir(dir):
-                        os.chdir(dir)
-                    else:
-                        print(f"cd: {dir}: No such file or directory")
+                    cmd_cd(args, home)
                 case "echo":
-                    print(*args)
+                    if stdout_file:
+                        with open(stdout_file, "w") as f:
+                            cmd_echo(args, out=f)
+                    else:
+                        cmd_echo(args)
                 case "exit":
                     break
         elif find_in_path(path, command):
-            subprocess.run([command, *args])
+            if stdout_file:
+                with open(stdout_file, "w") as f:
+                    subprocess.run([command, *args], stdout=f)
+            else:
+                subprocess.run([command, *args])
         else:
             print(f"{command}: command not found")
 
