@@ -20,7 +20,9 @@ def main():
         whole_input = input()
 
         # split first word and rest from the input
-        command, args, stdout_file, stderr_file = parse_input(whole_input, home)
+        command, args, stdout_file, stderr_file, stdout_append, stderr_append = (
+            parse_input(whole_input, home)
+        )
 
         if command in BUILTIN_COMMANDS:
             match command:
@@ -33,9 +35,11 @@ def main():
                 case "echo":
                     with ExitStack() as stack:
                         if stderr_file:
-                            stack.enter_context(open(stderr_file, "w"))
+                            stack.enter_context(open(stderr_file, "w" if not stderr_append else "a"))
                         if stdout_file:
-                            cmd_echo(args, out=stack.enter_context(open(stdout_file, "w")))
+                            cmd_echo(
+                                args, out=stack.enter_context(open(stdout_file, "w" if not stdout_append else "a"))
+                            )
                         else:
                             cmd_echo(args)
                 case "exit":
@@ -44,9 +48,9 @@ def main():
             with ExitStack() as stack:
                 kwargs = {}
                 if stdout_file:
-                    kwargs["stdout"] = stack.enter_context(open(stdout_file, "w"))
+                    kwargs["stdout"] = stack.enter_context(open(stdout_file, "w" if not stdout_append else "a"))
                 if stderr_file:
-                    kwargs["stderr"] = stack.enter_context(open(stderr_file, "w"))
+                    kwargs["stderr"] = stack.enter_context(open(stderr_file, "w" if not stderr_append else "a"))
                 subprocess.run([command, *args], **kwargs)
         else:
             print(f"{command}: command not found")
