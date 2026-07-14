@@ -1,17 +1,26 @@
 import sys
 import os
 import subprocess
+import readline
 from contextlib import ExitStack
+
+from .constants import BUILTIN_COMMANDS
 
 from .utils import find_in_path
 from .builtins import cmd_echo, cmd_pwd, cmd_type, cmd_cd
-from .constants import BUILTIN_COMMANDS
 from .parser import parse_input
 
 
 def main():
     path = os.environ["PATH"]
     home = os.getenv("HOME")
+
+    readline.parse_and_bind("tab: complete")
+    #  use BUILTIN_COMMANDS
+    # add trailing space to the completion
+    readline.set_completer(
+        lambda text, state: [c for c in BUILTIN_COMMANDS if c.startswith(text)][state] + " "
+    )
 
     while True:
         sys.stdout.write("$ ")
@@ -35,10 +44,15 @@ def main():
                 case "echo":
                     with ExitStack() as stack:
                         if stderr_file:
-                            stack.enter_context(open(stderr_file, "w" if not stderr_append else "a"))
+                            stack.enter_context(
+                                open(stderr_file, "w" if not stderr_append else "a")
+                            )
                         if stdout_file:
                             cmd_echo(
-                                args, out=stack.enter_context(open(stdout_file, "w" if not stdout_append else "a"))
+                                args,
+                                out=stack.enter_context(
+                                    open(stdout_file, "w" if not stdout_append else "a")
+                                ),
                             )
                         else:
                             cmd_echo(args)
@@ -48,9 +62,13 @@ def main():
             with ExitStack() as stack:
                 kwargs = {}
                 if stdout_file:
-                    kwargs["stdout"] = stack.enter_context(open(stdout_file, "w" if not stdout_append else "a"))
+                    kwargs["stdout"] = stack.enter_context(
+                        open(stdout_file, "w" if not stdout_append else "a")
+                    )
                 if stderr_file:
-                    kwargs["stderr"] = stack.enter_context(open(stderr_file, "w" if not stderr_append else "a"))
+                    kwargs["stderr"] = stack.enter_context(
+                        open(stderr_file, "w" if not stderr_append else "a")
+                    )
                 subprocess.run([command, *args], **kwargs)
         else:
             print(f"{command}: command not found")
