@@ -6,7 +6,7 @@ from contextlib import ExitStack
 
 from .constants import BUILTIN_COMMANDS
 
-from .utils import find_in_path
+from .utils import autocompleter, find_in_path
 from .builtins import cmd_echo, cmd_pwd, cmd_type, cmd_cd
 from .parser import parse_input
 
@@ -18,9 +18,7 @@ def main():
     readline.parse_and_bind("tab: complete")
     #  use BUILTIN_COMMANDS
     # add trailing space to the completion
-    readline.set_completer(
-        lambda text, state: [c for c in BUILTIN_COMMANDS if c.startswith(text)][state] + " "
-    )
+    readline.set_completer(lambda text, state: autocompleter(text, path)[state] + " ")
 
     while True:
         sys.stdout.write("$ ")
@@ -32,6 +30,9 @@ def main():
         command, args, stdout_file, stderr_file, stdout_append, stderr_append = (
             parse_input(whole_input, home)
         )
+
+        if not command:
+            continue
 
         if command in BUILTIN_COMMANDS:
             match command:

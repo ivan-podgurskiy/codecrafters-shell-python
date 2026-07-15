@@ -35,7 +35,7 @@ def parse_input(line, home):
     parts = shlex.split(line)
 
     if not parts:
-        return "", [], None, None
+        return "", [], None, None, False, False
 
     parts, stdout_file, stderr_file, stdout_append, stderr_append = parse_redirects(
         parts
