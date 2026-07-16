@@ -6,7 +6,7 @@ from contextlib import ExitStack
 
 from .constants import BUILTIN_COMMANDS
 
-from .utils import autocompleter, find_in_path
+from .utils import make_completer, find_in_path
 from .builtins import cmd_echo, cmd_pwd, cmd_type, cmd_cd
 from .parser import parse_input
 
@@ -14,40 +14,9 @@ from .parser import parse_input
 def main():
     path = os.environ["PATH"]
     home = os.getenv("HOME")
-    tab_count = 0
-    last_text = None
-
-    def completer(text, state):
-        nonlocal tab_count, last_text
-
-        if state != 0:
-            return None
-
-        if text != last_text:
-            tab_count = 0
-            last_text = text
-
-        matches = sorted(autocompleter(text, path))
-        if not matches:
-            return None
-
-        if len(matches) == 1:
-            tab_count = 0
-            return matches[0] + " "
-
-        tab_count += 1
-        if tab_count == 1:
-            sys.stdout.write("\x07")
-            sys.stdout.flush()
-            return None
-
-        sys.stdout.write("\n" + "  ".join(matches) + "\n$ " + readline.get_line_buffer())
-        sys.stdout.flush()
-        tab_count = 0
-        return None
 
     readline.parse_and_bind("tab: complete")
-    readline.set_completer(completer)
+    readline.set_completer(make_completer(path))
 
     while True:
         sys.stdout.write("$ ")

@@ -1,6 +1,49 @@
 import os
+import sys
+import readline
 
 from app.constants import BUILTIN_COMMANDS
+
+
+def make_completer(path):
+    tab_count = 0
+    last_text = None
+
+    def completer(text, state):
+        nonlocal tab_count, last_text
+
+        if state != 0:
+            return None
+
+        if text != last_text:
+            tab_count = 0
+            last_text = text
+
+        matches = sorted(autocompleter(text, path))
+        if not matches:
+            return None
+
+        if len(matches) == 1:
+            tab_count = 0
+            return matches[0] + " "
+
+        prefix = os.path.commonprefix(matches)
+        if prefix != text:
+            tab_count = 0
+            return prefix
+
+        tab_count += 1
+        if tab_count == 1:
+            sys.stdout.write("\x07")
+            sys.stdout.flush()
+            return None
+
+        sys.stdout.write("\n" + "  ".join(matches) + "\n$ " + readline.get_line_buffer())
+        sys.stdout.flush()
+        tab_count = 0
+        return None
+
+    return completer
 
 
 def find_in_path(path, command, partial=False):
